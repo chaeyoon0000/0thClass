@@ -146,10 +146,9 @@ README.md of Software System Development in DongDuk.W.Univ by Chaeyoon Kim.
   ```
   
 ### Human Resources
-|||
-|:---|:---:|---:| 
-|개발 투입 인력|4인| 
-|개발 기간|2019.03~2019.06|
-|담당 역할|풀스택 개발|
-
-<br>
+* 개발 투입 인력
+- 4인
+* 개발 기간
+- 2019.03~2019.06
+* 담당 역할
+- Full-Stack Development
