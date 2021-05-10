@@ -51,9 +51,13 @@ README.md of Software System Development in DongDuk.W.Univ by Chaeyoon Kim.
 
 ## E-R Diagram
 <img src="https://user-images.githubusercontent.com/79551041/117673891-2bc72d00-b1e6-11eb-91c3-cf768902c289.png" width="700" height="500">
+
 * Category테이블을 참조하여 아이템의 성격 분류
+
 * 시퀀스 하위 두 자리를 통해 각 아이템을 구별
+
 * CHEK조건 사용으로 wishlist와 order의 item에는 product, auction, team의 기본키만 들어갈 수 있도록 지정
+
 * Apply와 membership으로 테이블을 따로 관리하여 모집중인 팀과 모집 완료된 팀을 구분 할 수 있음
 
 ### Code Line
