@@ -62,7 +62,7 @@ README.md of Software System Development in DongDuk.W.Univ by Chaeyoon Kim.
 
 ### Code Line
 * 경매 기능(Auction, Bid)
-```swift
+```java
 	@Autowired		// applicationContext.xml에 정의된 scheduler 객체를 주입 받음
 	private ThreadPoolTaskScheduler scheduler;
 	
@@ -113,7 +113,7 @@ README.md of Software System Development in DongDuk.W.Univ by Chaeyoon Kim.
 ```
 
 * Message(RESTful)
-```
+```java
 @RequestMapping(value = "/messenger/getMessengerBySender.do/{uNum}", method = RequestMethod.GET, 
             produces = "application/json")
 	@ResponseBody
