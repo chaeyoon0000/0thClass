@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.repository.mapper.AuctionMapper">	
+  <cache />
+
+  	<select id="selectAuctions" parameterType="hashmap" resultType="Auction">
+		SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+		FROM auction a, category c, user_t u
+		WHERE a.cat_num = c.cat_num AND u.u_num = a.u_num
+		ORDER BY start_auc DESC
+	</select>
+	
+	<select id="selectAuctionById" parameterType="String" resultType="Auction">
+    	SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+  		FROM auction a, category c, user_t u
+  		WHERE a_num = #{aNum} and a.cat_num = c.cat_num AND u.u_num = a.u_num
+  	</select>
+  	
+  	<select id="selectAuctionsByState" parameterType="String" resultType="Auction">
+    	SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+  		FROM auction a, category c, user_t u
+  		WHERE state = #{state} and a.cat_num = c.cat_num AND u.u_num = a.u_num
+  	</select>
+  	
+  	<select id="searchAuctionByCategory" parameterType="String" resultType="Auction">
+  		SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+		FROM auction a, category c, user_t u
+		WHERE auction.cat_num = #{category} AND u.u_num = a.u_num
+  	</select>
+  	
+  	<select id="searchAuctionByKeyword" parameterType="String" resultType="Auction">
+  		SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+		FROM auction a, category c, user_t u
+		WHERE auction.cat_num = #{category} AND u.u_num = a.u_num 
+			  AND c.cat_title LIKE '%'+#{keyword}+'%'
+  	</select>
+  	
+  	<insert id="insertAuction" parameterType="Auction">
+    	INSERT INTO auction(a_num, name, cat_num, low, high, content, start_auc, end_auc, state, image, file_path, u_num)
+		VALUES (SEQ_AUC_NUM.nextval, #{name}, #{category.catNum}, #{low}, #{high}, #{content}, 
+		#{startAuc}, #{endAuc}, #{state}, #{image}, #{filePath}, #{seller.uNum})
+  	</insert> 
+  	
+  	<update id="updateAuction">
+  		UPDATE auction SET name = #{name}, cat_num = #{category.catNum}, content = #{content}
+  		WHERE a_num = #{aNum}
+  	</update>
+  	
+  	<delete id="deleteAuction" parameterType="String">
+  		DELETE FROM auction
+  		WHERE a_num = #{aNum}
+  	</delete>
+  	
+  	<update id="updateBidAuctionState"> 
+		UPDATE auction SET state='2'
+  	</update>
+ 
+ 	<update id="closeAuctionBid" parameterType="Date">
+	    <![CDATA[
+	     UPDATE auction SET state = '2'
+	     WHERE end_auc <= #{curTime}
+	    ]]>
+  	</update>
+  	
+  	<select id="selectAuctionByCondition" parameterType="hashmap" resultType="Auction">
+		SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+		FROM auction a, category c
+		<where>
+		a.cat_num = c.cat_num
+			<if test="a_num != null">
+				AND a_num = #{aNum}
+			</if>
+			<if test="seller != null">
+				AND u_num = #{seller}
+			</if>
+			<if test="kind != null">
+				AND kind = #{kind}
+			</if>
+			<if test="category != null">
+				AND a.cat_num = #{category}
+			</if>
+			<if test="keyword != null">
+				<if test="select == 'content'">
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+				AND content LIKE #{pattern}
+				</if>
+				<if test="select == 'title'">
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+				AND name LIKE #{pattern}
+				</if>
+			</if>
+		</where>
+	</select>
+	
+	<select id="searchAuctionByState" parameterType="String" resultType="Auction">
+		SELECT a_num, a.name, a.cat_num, low, high, content, start_auc, end_auc, state, a.u_num, image, file_path
+		FROM auction a, category c, user_t u
+		WHERE a.cat_num = c.cat_num AND u.u_num = a.u_num and state = #{state}
+		ORDER BY start_auc DESC
+	</select>
+</mapper>

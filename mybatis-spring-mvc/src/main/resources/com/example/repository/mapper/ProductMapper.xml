@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.repository.mapper.ProductMapper">	
+  <cache />
+  
+  <!-- CommentMapper interface에서	@Select annotation을 사용해서 정의 
+  <select id="selectCommentByPrimaryKey" parameterType="long" resultType="Comment">
+    SELECT
+	  comment_no,
+	  user_id,
+	  comment_content,
+	  reg_date
+	FROM COMMENTS
+	WHERE comment_no = #{commentNo}
+  </select> -->
+  
+  <sql id="BaseColumns">
+    p_num AS pNum, 
+    product.name AS name, 
+    price, 
+    c.cat_title AS "cate.catTitle", 
+    content, 
+    image, 
+    user_t.id AS "seller.id", 
+    file_path AS filePath, 
+    is_sale AS isSale
+  </sql>
+  
+<!--   <resultMap id="associationResultMap" type="Product"> -->
+<!--   	<id column="p_num" jdbcType="NUMERIC" property="pNum" /> -->
+<!--   	<result column="name" jdbcType="VARCHAR" property="name" /> -->
+<!--   	<result column="price" jdbcType="NUMERIC" property="price" /> -->
+<!--   	<result column="content" jdbcType="VARCHAR" property="content" /> -->
+<!--   	<result column="image" jdbcType="VARCHAR" property="image" /> -->
+<!--   	<result column="u_num" jdbcType="NUMERIC" property="seller" /> -->
+<!--   	<result column="file_path" jdbcType="VARCHAR" property="filePath" /> -->
+<!--   	<result column="is_sale" jdbcType="NUMERIC" property="isSale" /> -->
+<!--   	<association property="cate" column="cat_num" javaType="Category"> -->
+<!--   		<id property="catNum" column="cat_num" /> -->
+<!--   		<result property="catTitle" column="cat_title" />   -->
+<!--   	</association> -->
+<!-- 	<association property="seller" column="u_num" javaType="User"> -->
+<!--   		<id property="uNum" column="u_num" /> -->
+<!--   		<result property="id" column="id" />   -->
+<!--   	</association> -->
+<!--   </resultMap> -->
+  
+  
+<!--   product 목록보기 -->
+<!--   <select id="selectProductList" resultMap="associationResultMap"> -->
+  <select id="selectProductList" resultType="Product">
+		SELECT <include refid="BaseColumns" />
+		FROM product, user_t, category c
+		WHERE product.u_num = user_t.u_num and product.cat_num = c.cat_num
+		ORDER BY p_num desc
+	</select>
+	
+<!-- 	product 상세보기 -->
+	<select id="selectProduct" parameterType="String" resultType="Product">
+		SELECT <include refid="BaseColumns" />
+		FROM product, user_t, category c
+		WHERE product.u_num = user_t.u_num and product.cat_num = c.cat_num and p_num = #{pNum}
+	</select>
+	
+	<select id="selectUserBypNum" parameterType="String" resultType="User">
+		SELECT user_t.id AS id, user_t.u_num AS uNum
+		FROM product, user_t
+		WHERE product.u_num = user_t.u_num and p_num = #{pNum}
+	</select>
+	
+<!-- 	카테고리별 및 키워드로 검색하기 -->
+	<select id="selectProductByCondition" parameterType="hashmap" resultType="Product">
+		SELECT p_num AS pNum,  
+ 			    product.name AS name,  
+			    price,  
+ 			    c.cat_title AS "cate.catTitle",
+ 			    c.cat_num AS "cate.catNum",
+ 			    image, is_sale AS isSale, product.content AS content, product.u_num AS "seller.uNum",
+ 			    file_path AS filePath
+		<!-- p_num AS pNum, product.name AS name, price, c.cat_title AS category.catTitle, content, image, user_t.id AS seller, file_path AS filePath, is_sale AS isSale -->
+		FROM product, user_t, category c
+		<where>
+		product.u_num = user_t.u_num and product.cat_num = c.cat_num
+			<if test="category != null">
+				AND c.cat_num = #{category}
+			</if>
+			<if test="keyword != null">
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+					AND product.name LIKE #{pattern}
+			</if>
+			<if test="prop != null">
+				AND is_sale = #{prop}  <!-- ?? -->
+			</if>
+		</where>
+		ORDER BY p_num desc
+	</select>
+	
+ 	<select id="selectRestProductByCondition" parameterType="hashmap" resultType="Product">
+ 		SELECT  p_num AS pNum,  
+ 			    product.name AS name,  
+			    price,  
+ 			    c.cat_title AS "cate.catTitle",
+ 			    c.cat_num AS "cate.catNum",
+ 			    image, is_sale AS isSale, product.content AS content, product.u_num AS "seller.uNum",
+ 			    file_path AS filePath
+ 		FROM product, category c 
+ 		<where> 
+ 			product.cat_num = c.cat_num
+ 			<if test="prop != 2">
+ 				AND is_sale = #{prop} 
+ 			</if>
+ 		</where>
+ 		ORDER BY p_num desc
+ 	</select>
+  
+  <insert id="insertProduct" parameterType="Product">
+    INSERT INTO product(p_num, name, price, cat_num, content, image, u_num, file_path, is_sale) 
+		VALUES (SEQ_PRD_NUM.nextval, #{name}, #{price}, #{cate.catNum}, #{content}, #{image}, #{seller.uNum}, #{filePath}, #{isSale})
+  </insert>
+<!--   <insert id="insertProduct" parameterType="Product"> -->
+<!--     <selectKey keyProperty="pNum" resultType="String" order="BEFORE"> -->
+<!--     	SELECT SEQ_RVW_NUM.nextval AS p_num FROM dual -->
+<!--     </selectKey> -->
+<!--     INSERT INTO product(p_num, name, price, cat_num, content, image, u_num, file_path, is_sale)  -->
+<!-- 		VALUES (#{pNum}, #{name}, #{price}, #{catTitle}, #{content}, #{image}, #{seller}, #{filePath}, #{isSale}) -->
+<!--   </insert> -->
+  
+  <update id = "updateProduct" parameterType="Product">
+  	UPDATE product 
+  	SET <!-- name = #{name}, price = #{price}, cat_num = #{cate.catNum}, content = #{content},  -->
+  		is_sale = #{isSale}, image = #{image} <!--file_path = #{filePath},  -->
+	WHERE p_num = #{pNum}
+  </update>
+  
+<!--   <select id="selectProductByName" parameterType="String" resultType="Product"> -->
+<!--   	SELECT p_num AS pNum, product.name AS name, price, category.cat_title AS catTitle, content, image, user_t.id AS seller, file_path AS filePath, is_sale AS isSale -->
+<!--     FROM product, user_t, category -->
+<!--     WHERE product.u_num = user_t.u_num and product.cat_num = category.cat_num and product.name = #{name} -->
+<!--   </select> -->
+  
+<!--   <select id="searchProductList" parameterType="String" resultType="Product"> -->
+  
+<!--   </select> -->
+  
+<!--   <select id="selectProductListByCategory" parameterType="String" resultType="Product"> -->
+  
+<!--   </select> -->
+
+</mapper>

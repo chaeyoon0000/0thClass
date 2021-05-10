@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.repository.mapper.ReviewMapper">	
+  <cache />
+
+  <select id="selectReviews" parameterType="hashmap" resultType="Review">
+		SELECT r_num AS num, title, content, r_date AS writeDate, image, rate, item, u_num AS "writer.uNum", kind, cat_title AS "category.catTitle"
+		FROM review, category
+		WHERE review.r_cat = category.cat_num and review.item != 'admin'
+		ORDER BY r_num desc
+	</select>
+	
+	<select id="selectNotices" parameterType="hashmap" resultType="Review">
+		SELECT r_num AS num, title, content, r_date AS writeDate, image, rate, item, u_num AS "writer.uNum", kind, cat_title AS "category.catTitle"
+		FROM review, category
+		WHERE review.r_cat = category.cat_num and review.item = #{admin}
+		ORDER BY r_num desc
+	</select>
+
+	<select id="selectReviewByPrimaryKey" resultType="Review">
+		SELECT r_num AS num, title, content, r_date AS writeDate, image, rate, item, user_t.id AS "writer.id", user_t.u_num AS "writer.uNum", kind, cat_title AS "category.catTitle", cat_num AS "category.catNum"
+	    FROM review, category, user_t
+		WHERE r_num = #{r_num} AND review.r_cat = category.cat_num AND user_t.u_num = review.u_num
+	</select>
+	
+	<select id="selectCommentsByrNum" parameterType="hashmap" resultType="Comment">
+		SELECT c_num, content, c_date, id AS u_num 
+		FROM comment_t, user_t 
+		WHERE comment_t.r_num = #{r_num} AND user_t.u_num = comment_t.u_num
+		ORDER BY c_num asc
+	</select>
+	
+	<select id="selectReviewByCondition" parameterType="hashmap" resultType="Review">
+		SELECT r_num AS "num", title, content, r_date AS "writeDate", image, rate, item, u_num AS "writer.uNum", kind, cat_title AS "category.catTitle" 
+		FROM review, category
+		<where>
+		review.r_cat = category.cat_num
+			<if test="r_num != null">
+				AND r_num = #{num}
+			</if>
+			<if test="writer != null">
+				AND u_num = #{writer}
+			</if>
+			<if test="kind != null">
+				AND kind = #{kind}
+			</if>
+			<if test="category != null">
+				AND r_cat = #{category}
+			</if>
+			<if test="keyword != null">
+				<if test="select == 'content'">
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+				AND content LIKE #{pattern}
+				</if>
+				<if test="select == 'title'">
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+				AND title LIKE #{pattern}
+				</if>
+			</if>
+		</where>
+		ORDER BY r_num desc
+	</select>
+  
+  <insert id="insertReview" parameterType="Review">
+    INSERT INTO review(r_num, title, content, r_date, image, rate, item, u_num, kind, r_cat)
+		VALUES (SEQ_RVW_NUM.nextval, #{title}, #{content}, #{writeDate}, #{image}, #{rate}, #{item}, #{writer.uNum}, #{kind}, #{category.catNum})
+  </insert>
+  
+  <insert id="insertNotice" parameterType="Review">
+    INSERT INTO review(r_num, title, content, r_date, image, rate, item, u_num, kind, r_cat)
+		VALUES (SEQ_RVW_NUM.nextval, #{title}, #{content}, #{writeDate}, #{image}, #{rate}, #{item}, #{writer.uNum}, #{kind}, #{category.catNum})
+  </insert>
+  
+  
+  <insert id="insertComment" parameterType="Comment">
+    INSERT INTO comment_t(c_num, r_num, content, c_date, u_num)
+		VALUES (SEQ_COM_NUM.nextval, #{rNum}, #{content}, #{cDate}, #{uNum})
+  </insert>
+
+  <update id="updateReview" parameterType="Review">
+		UPDATE review SET
+			title = #{title}, content = #{content}, rate = #{rate}, item = #{item}, kind = #{kind}, r_cat = #{category.catNum}, image = #{image}
+		WHERE r_num = #{num}
+	</update>
+  
+  <delete id="deleteReview" parameterType="String">
+    DELETE FROM review
+		WHERE r_num = #{r_num}
+  </delete>
+  
+  <delete id="deleteComment" parameterType="String">
+    DELETE FROM comment_t
+		WHERE c_num = #{c_num}
+  </delete>
+  
+  <delete id="deleteCommentByrNum" parameterType="String">
+    DELETE FROM comment_t
+		WHERE r_num = #{r_num}
+  </delete>
+</mapper>
