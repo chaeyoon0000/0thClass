@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+ 
+
+<mapper namespace="com.example.repository.mapper.TeamMapper">	
+
+  <cache />
+
+ 
+
+  
+
+	<select id="selectTeams" parameterType="hashmap" resultType="Team">
+
+		SELECT
+
+		  T_NUM, T_NAME, t_start, t_limit, cat_title AS "category.catTitle", 
+
+		  t_content, t_end, recruit, t_term, price, u_num 
+
+		FROM team, category
+
+		WHERE team.cat_num = category.cat_num
+
+		ORDER BY t_num asc
+
+	</select>
+
+	<select id="selectListTeams" parameterType="hashmap" resultType="Team">
+		select count(apply.t_num) AS "count", team.t_num, t_name, t_start,  t_content, t_end, recruit, t_term, t_limit, 
+		        team.cat_num, cat_title AS "category.catTitle", user_t.u_num AS "mentor.uNum", user_t.name AS "mentor.name" 
+		from team, apply, user_t, category
+		where team.t_num = apply.t_num (+)
+		         and 
+		team.u_num = user_t.u_num and category.cat_num = team.cat_num
+		group by team.t_num, t_name, t_start, t_limit, cat_title, t_content, t_end, recruit, t_term, price, team.cat_num, user_t.u_num, user_t.name
+		order by team.t_num
+
+	</select>
+
+	<select id="selectListWishListTeams" parameterType="hashmap" resultType="Team">
+
+		select count(apply.t_num) AS "price", team.t_num, t_name, t_start,  t_content, t_end, recruit, t_term, t_limit, 
+
+		        team.cat_num, user_t.u_num AS "mentor.uNum", user_t.name AS "mentor.name" 
+
+		from team, apply, user_t, wishlist 
+
+		where team.t_num = apply.t_num (+) 
+
+		         and 
+
+		team.u_num = user_t.u_num and team.t_num = wishlist.item and owner = #{uNum} 
+
+		group by team.t_num, t_name, t_start, t_limit, t_content, t_end, recruit, t_term, price, team.cat_num, user_t.u_num, user_t.name 
+
+		order by team.t_num
+
+	</select>
+
+	
+
+	
+
+	
+
+	
+
+ 
+
+	<select id="selectTeamByPrimaryKey" resultType="Team">
+
+		SELECT
+
+		  TEAM.T_NUM, T_NAME, T_START, T_LIMIT, CAT_TITLE AS "category.catTitle",  
+
+		  T_CONTENT, T_END, RECRUIT, T_TERM, PRICE, TEAM.U_NUM, NAME AS "mentor.name"
+
+		FROM TEAM, CATEGORY, USER_T
+
+		WHERE TEAM.CAT_NUM = CATEGORY.CAT_NUM AND TEAM.U_NUM = USER_T.U_NUM AND T_NUM = #{t_num}
+
+	</select>
+
+	
+
+	<select id="mentorNameByMentorNum" resultType="User">
+
+		SELECT NAME, U_NUM, point
+
+		FROM USER_T
+
+		WHERE U_NUM = #{uNum}
+
+	</select>
+
+	
+
+ 
+
+	
+
+	<select id="applyCheckByTnumUnum" resultType="Team">
+
+		select apply.t_num, apply.u_num AS "mentor.uNum"
+
+		from team, apply
+
+		where team.t_num = apply.t_num and apply.t_num = #{tNum} and apply.u_num = #{userSessionNum}
+
+	</select>
+
+ 
+
+	
+
+	
+
+	<select id="selectTeamByCondition" parameterType="hashmap" resultType="Team">
+
+		select t_num, t_name, t_start, cat_title AS "category.catTitle", t_limit, cat_title, t_content, t_end, recruit, t_term, price, u_num
+
+		from team, category
+
+		<where>
+
+		team.cat_num = category.cat_num
+
+			<if test="category != null">
+
+				AND team.cat_num = #{category}
+
+			</if>
+
+			<if test="keyword != null">
+
+				<if test="select == 'tContent'">
+
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+
+				AND t_content LIKE #{pattern}
+
+				</if>
+
+				<if test="select == 'tName'">
+
+				<bind name="pattern" value="'%' + _parameter.get('keyword') + '%'" />
+
+				AND t_name LIKE #{pattern}
+
+				</if>
+
+			</if>
+
+		</where>
+
+	</select>
+
+	
+
+	
+
+	
+
+	<select id="memberShipCheckByTnumUnum" resultType="Team">
+
+		select memberShip.t_num, memberShip.u_num AS "mentor.uNum"
+
+		from team, memberShip
+
+		where team.t_num = memberShip.t_num and memberShip.t_num = #{tNum} and memberShip.u_num = #{userSessionNum}
+
+	</select>
+
+	
+
+	<select id="mentorCheckByTnumUnum" resultType="Team">
+
+		select team.t_num, team.u_num AS "mentor.uNum"
+
+		from team, user_t
+
+		where team.u_num = user_t.u_num and team.t_num = #{tNum} and team.u_num = #{userSessionNum}
+
+	</select>
+
+	
+
+	<select id="applyLimitCheck" resultType="Team">
+
+		select count(apply.t_num) AS "tLimit", team.t_num, t_name, t_start,  t_content, t_end, recruit, t_term, price,
+
+		        team.cat_num, user_t.u_num AS "mentor.uNum", user_t.name AS "mentor.name"
+
+		from team, apply, user_t
+
+		where team.t_num = apply.t_num (+)
+
+		        and recruit=0 and
+
+		team.u_num = user_t.u_num and apply.t_num = #{tNum}
+
+		group by team.t_num, t_name, t_start, t_limit, t_content, t_end, recruit, t_term, price, team.cat_num, user_t.u_num, user_t.name
+
+		order by team.t_num
+
+	</select>
+
+	<select id="applyList" resultType="Team">
+
+		select t_num, u_num AS "mentor.uNum"
+
+		from apply
+
+		where t_num = #{tNum}
+
+	</select>
+
+	
+
+ 
+
+	<select id="memberShipList" resultType="Team">
+
+		select t_num, u_num AS "mentor.uNum"
+
+		from memberShip
+
+		where t_num = #{tNum}
+
+	</select>
+
+	
+
+	<select id="activityList" resultType="Activity">
+
+		select a_num, t_num AS "team.tNum", u_num AS "user.uNum"
+
+		from activity
+
+		where t_num = #{tNum}
+
+	</select>
+
+	<select id="scheduleList" resultType="Schedule">
+
+		select s_num, t_num AS "team.tNum", u_num AS "mentor.uNum"
+
+		from schedule
+
+		where t_num = #{tNum}
+
+	</select>
+
+ 
+
+ 
+
+	<insert id="insertTeam" parameterType="Team">
+
+		INSERT INTO team(t_num, t_name, t_start, t_limit, cat_num, t_content, t_end, recruit, t_term, price, u_num)
+
+			VALUES (SEQ_TEA_NUM.nextval, #{tName}, #{tStart}, #{tLimit}, #{category.catNum}, #{tContent}, #{tEnd}, #{recruit}, #{tTerm}, #{price}, #{mentor.uNum})
+
+	</insert>
+
+	<insert id="insertTeamRequestToApply" parameterType="hashMap">
+
+		INSERT INTO apply(u_num, t_num) 
+
+			VALUES (#{uNum}, #{tNum})
+
+	</insert>
+
+	
+
+	<delete id="deleteTeam" parameterType="String">
+
+   		 DELETE FROM team
+
+		WHERE t_num = #{tNum}
+
+  	</delete>
+
+  	<delete id="leaveTeam" parameterType="String">
+
+   		 DELETE FROM apply
+
+			WHERE t_num = #{tNum} and u_num = #{userSessionNum}
+
+  	</delete>
+
+  
+
+  	
+
+  	
+
+	<update id="updateTeam" parameterType="Team">
+
+		UPDATE team SET
+
+			t_name = #{tName}, t_start = #{tStart}, t_limit = #{tLimit}, cat_num = #{category.catNum}, 
+
+			t_content = #{tContent}, t_end = #{tEnd}, recruit = #{recruit}, t_term = #{tTerm}, 
+
+			price = #{price}, u_num = #{mentor.uNum}
+
+		WHERE t_num = #{tNum}
+
+	</update>
+
+	
+
+	
+
+	<insert id="insertMemberShip" parameterType="Team">
+
+		INSERT INTO membership(t_num, u_num)
+
+			VALUES (#{tNumMemberShip}, #{uNumMemberShip})
+
+	</insert>
+
+ 
+
+	<delete id="deleteApply" parameterType="String">
+
+   		 DELETE FROM apply
+
+			WHERE t_num = #{tNumMemberShip} and u_num = #{uNumMemberShip}
+
+  	</delete>
+
+  	<delete id="deleteMemberShip" parameterType="String">
+
+   		 DELETE FROM MemberShip
+
+			WHERE t_num = #{tNumMemberShip} and u_num = #{uNumMemberShip}
+
+  	</delete>
+
+  	<delete id="deleteActivity" parameterType="String">
+
+   		 DELETE FROM Activity
+
+			WHERE t_num = #{tNumMemberShip} and u_num = #{uNumMemberShip}
+
+  	</delete>
+
+  	
+
+  	<delete id="deleteSchedule" parameterType="String">
+
+   		 DELETE FROM Schedule
+
+			WHERE t_num = #{tNumMemberShip} and u_num = #{uNumMemberShip}
+
+  	</delete>
+
+	
+
+	<update id="updateTeamRecruit" parameterType="String">
+
+		UPDATE team SET 
+
+			recruit = 1 
+
+		WHERE t_num = #{tNum}
+
+	</update>
+
+	
+
+	<update id="insertTeamRegisterPoint" parameterType="String">
+
+		UPDATE user_t SET
+
+			 point = #{pointC} 
+
+		WHERE u_num = #{mentorNum}
+
+	</update>
+
+	<update id="insertTeamCompleteMemberPoint" parameterType="String">
+
+		UPDATE user_t SET
+
+			 point= #{pointC} 
+
+		WHERE u_num = #{uNumMemberShip}
+
+	</update>
+
+ 
+
+	<update id="insertTeamCompleteLeaderPoint" parameterType="String">
+
+		UPDATE user_t SET
+
+			 point = #{pointC1} 
+
+		WHERE u_num = #{mentorNum}
+
+	</update>
+
+	<update id="deleteTeamRegisterPoint" parameterType="String">
+
+		UPDATE user_t SET
+
+			 point = #{pointC} 
+
+		WHERE u_num = #{mentorNum}
+
+	</update>
+	<delete id="deleteWishlist" parameterType="String">
+		select w_num, item, kind, owner
+		from wishlist
+		where item = #{tNum} and owner = #{uNum}
+	</delete>
+
+	
+
+	
+
+	
+
+</mapper>

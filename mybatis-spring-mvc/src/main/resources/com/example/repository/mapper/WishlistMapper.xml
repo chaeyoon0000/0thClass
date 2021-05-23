@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.repository.mapper.WishlistMapper">	
+  	<cache />
+	
+	<sql id="BaseColumns">
+		w_num AS wNum, 
+		item, 
+		p.name AS iName, 
+		p.catTitle AS catTitle, 
+		p.price AS price, 
+		p.seller_id AS seller, 
+		p.isSale AS isSale, 
+		kind, <!-- , --> 
+		u.u_num AS "owner.uNum", 
+		u.id AS "owner.id"
+	</sql>
+	
+	<!--  wish에 product 목록보기 -->
+  	<select id="selectProductListFromWish" parameterType="String" resultType="WishList">
+		SELECT <include refid="BaseColumns" />
+		FROM wishlist, user_t u, (SELECT p_num AS pNum, 
+									    product.name AS name, 
+									    price, 
+									    c.cat_title AS catTitle, 
+									    user_t.id AS seller_id, 
+									    is_sale AS isSale
+  								FROM product, category c, user_t
+  								WHERE product.cat_num = c.cat_num and product.u_num = user_t.u_num) p
+		WHERE wishlist.owner = u.u_num and wishlist.owner = #{uNum} and wishlist.item = p.pNum and wishlist.kind = '2'
+		ORDER BY w_num desc
+	</select>
+	
+	<!--  wish에 team 목록보기 -->
+  	<select id="selectTeamListFromWish" parameterType="String" resultType="WishList">
+  	
+  	</select>
+  	
+  	<!--  wish에 auction 목록보기 -->
+  	<select id="selectAuctionListFromWish" parameterType="String" resultType="WishList">
+  	
+  	</select>
+  	
+  	<!--  wish에 있는 product 하나 가져오기 -->
+  	<select id="selectOneFromWish" parameterType="hashmap" resultType="WishList">
+		SELECT <include refid="BaseColumns" />
+		FROM wishlist, user_t u, (SELECT p_num AS pNum, 
+									    product.name AS name, 
+									    price, 
+									    c.cat_title AS catTitle, 
+									    user_t.id AS seller_id, 
+									    is_sale AS isSale
+  								FROM product, category c, user_t
+  								WHERE product.cat_num = c.cat_num and product.u_num = user_t.u_num) p
+		WHERE wishlist.owner = u.u_num and wishlist.owner = #{uNum} and wishlist.w_num = #{wNum}
+				and wishlist.item = p.pNum and wishlist.kind = #{kind} and wishlist.item = #{iNum}
+	</select>
+	
+	<select id="selectOneFromWish2" parameterType="hashmap" resultType="WishList">
+		SELECT <include refid="BaseColumns" />
+		FROM wishlist, user_t u, (SELECT p_num AS pNum, 
+									    product.name AS name, 
+									    price, 
+									    c.cat_title AS catTitle, 
+									    user_t.id AS seller_id, 
+									    is_sale AS isSale
+  								FROM product, category c, user_t
+  								WHERE product.cat_num = c.cat_num and product.u_num = user_t.u_num) p
+		WHERE wishlist.owner = u.u_num and wishlist.owner = #{uNum}
+				and wishlist.item = p.pNum and wishlist.kind = #{kind} and wishlist.item = #{iNum}
+	</select>
+  	
+<!-- 받은 messenger 상세보기 -->
+<!-- 	<select id="selectMessenger" parameterType="hashmap" resultType="Messenger"> -->
+<!-- 		SELECT <include refid="BaseColumns" /> -->
+<!-- 		FROM messenger, user_t u1, user_t u2 -->
+<!-- 		WHERE messenger.sender = u1.u_num and messenger.receiver = u2.u_num and m_num = #{mNum} and u2.u_num = #{uNum}  -->
+<!-- 	</select> -->
+	
+  	<insert id="insertWishlist" parameterType="Wishlist">
+    	INSERT INTO wishlist(w_num, item, kind, owner) 
+		VALUES (SEQ_WSL_NUM.nextval, #{item}, #{kind}, #{owner.uNum})
+  	</insert>
+  	
+  	<delete id="deleteFromWishlist" parameterType="hashmap">
+  		DELETE FROM wishlist
+		WHERE w_num = #{iNum} and owner = #{uNum}
+  	</delete>
+</mapper>
+  

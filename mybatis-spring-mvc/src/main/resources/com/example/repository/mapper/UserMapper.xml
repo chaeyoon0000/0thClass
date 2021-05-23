@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.repository.mapper.UserMapper">
+
+	<select id="selectUserById" resultType="User">
+		SELECT u_num, id, passwd, name, prop, address, phone, email, black, point
+		FROM user_t
+		WHERE id = #{id}
+	</select>
+	
+	<insert id="insertUser" parameterType="User">
+		INSERT INTO user_t(u_num, id, passwd, name, prop, address, phone, email, black, point)
+		VALUES (SEQ_USR_NUM.nextval, #{id}, #{passwd}, #{name}, #{prop}, #{address}, #{phone}, #{email}, #{black}, #{point})
+	</insert>
+	
+	<update id="editUser" parameterType="User">
+		UPDATE user_t
+		SET name = #{name}, passwd = #{passwd}, phone = #{phone}, email = #{email}, address = #{address}
+		WHERE u_num = #{uNum}
+	</update>
+	
+	<update id="addPoint" parameterType="hashmap">
+		UPDATE user_t
+		SET point = point+#{point}
+		WHERE u_num = #{uNum}
+	</update>
+	
+	<update id="usePoint" parameterType="hashmap">
+		UPDATE user_t
+		SET point = point-#{point}
+		WHERE u_num = #{uNum}
+	</update>
+	
+	<select id="searchForId" resultType="Integer">
+		SELECT count(u_num)
+		FROM user_t
+		WHERE id = #{id}
+	</select>
+	
+</mapper>

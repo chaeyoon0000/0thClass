@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.repository.mapper.MessengerMapper">	
+  	<cache />
+  
+    <sql id="BaseColumns">
+	    m_num AS mNum, 
+	    u1.id AS "sender.id", 
+	    u2.id AS "receiver.id", 
+	    m_content as content, 
+	    m_date AS "date", 
+	    title 
+  	</sql>
+  
+<!--   받은 messenger 목록보기 -->
+<!--   <select id="selectProductList" resultMap="associationResultMap"> -->
+  	<select id="selectMessengerList" parameterType="String" resultType="Messenger">
+		SELECT <include refid="BaseColumns" />
+		FROM messenger, user_t u1, user_t u2
+		WHERE messenger.sender = u1.u_num and messenger.receiver = u2.u_num and (sender = #{uNum} or receiver = #{uNum})
+	</select>
+	
+<!-- 받은 messenger 상세보기 -->
+	<select id="selectMessenger" parameterType="hashmap" resultType="Messenger">
+		SELECT <include refid="BaseColumns" />
+		FROM messenger, user_t u1, user_t u2
+		WHERE messenger.sender = u1.u_num and messenger.receiver = u2.u_num and m_num = #{mNum}<!--  and u2.u_num = #{uNum}  -->
+	</select>
+	
+	<select id="selectMessengerListBySender" parameterType="String" resultType="Messenger">
+		SELECT <include refid="BaseColumns" />
+		FROM messenger, user_t u1, user_t u2
+		WHERE messenger.sender = u1.u_num and messenger.receiver = u2.u_num and receiver = #{uNum}
+	</select>
+	
+	<select id="selectMessengerListByReceiver" parameterType="String" resultType="Messenger">
+		SELECT <include refid="BaseColumns" />
+		FROM messenger, user_t u1, user_t u2
+		WHERE messenger.sender = u1.u_num and messenger.receiver = u2.u_num and sender = #{uNum}
+	</select>
+	
+  	<insert id="insertMessenger" parameterType="Messenger">
+    	INSERT INTO messenger(m_num, sender, receiver, m_content, m_date, title) 
+		VALUES (SEQ_MSG_NUM.nextval, #{sender.uNum}, #{receiver.uNum}, #{content}, #{date}, #{title})
+  	</insert>
+  
+</mapper>

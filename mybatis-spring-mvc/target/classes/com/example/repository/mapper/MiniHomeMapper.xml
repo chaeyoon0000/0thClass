@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+ 
+
+<mapper namespace="com.example.repository.mapper.MiniHomeMapper">	
+
+  <cache />
+
+  
+
+ 
+
+	<select id="selectSchedules" parameterType="hashmap" resultType="Schedule">
+
+		SELECT s_num, title, sch_write, sch_date, sch_addr, sch_content, name AS "mentor.name", t_name AS "team.tName", schedule.u_num, schedule.t_num 
+
+		FROM schedule, team, user_t 
+
+		WHERE user_t.u_num = schedule.u_num and team.t_num = schedule.t_num and schedule.u_num = #{mentorSessionUnum} and schedule.t_num = #{teamSessionTnum}
+
+	</select>
+
+ 	<select id="selectScheduleByPrimaryKey" parameterType="hashmap" resultType="Schedule">
+
+		SELECT s_num, title, sch_write, sch_date, sch_addr, sch_content, name AS "mentor.name", t_name AS "team.tName", schedule.u_num, schedule.t_num AS "team.tNum" 
+
+		FROM schedule, team, user_t 
+
+		WHERE user_t.u_num = schedule.u_num and team.t_num = schedule.t_num and s_num = #{sNum}
+
+	</select>
+
+ 
+
+ 	<select id="selectActivityByPrimaryKey" parameterType="hashmap" resultType="Activity">
+
+		SELECT a_num, title, a_date, a_content, image, act_address, act_date, name AS "user.name", t_name AS "team.tName", activity.u_num, activity.t_num AS "team.tNum" 
+
+		FROM activity, team, user_t 
+
+		WHERE user_t.u_num = activity.u_num and team.t_num = activity.t_num and a_num = #{aNum}
+
+	</select>
+
+ 
+
+	<select id="selectActivitys" parameterType="hashmap" resultType="Activity">
+
+		SELECT a_num, title, a_date, a_content, image, act_address, act_date, user_t.name AS "user.name", team.t_name AS "team.tName", activity.u_num, activity.t_num AS "team.tNum" 
+
+		FROM activity, team, user_t 
+
+		WHERE user_t.u_num = activity.u_num and team.t_num = activity.t_num and team.t_num = #{teamSessionTnum}
+
+	</select>
+
+ 
+
+ 
+
+	<select id="WriterCheckByAnumUnum" parameterType="hashmap" resultType="Activity">
+
+		select activity.u_num, activity.t_num, activity.u_num AS "user.uNum"
+
+		from activity, user_t 
+
+		where activity.u_num = user_t.u_num and activity.a_num = #{aNum} and user_t.u_num = #{userSessionUnum}
+
+	</select>
+
+ 
+
+ 
+
+ 	<insert id="insertSchedule" parameterType="Schedule">
+
+		INSERT INTO schedule(s_num, title, sch_write, sch_date, sch_addr, sch_content, u_num, t_num)
+
+			VALUES (SEQ_SCD_NUM.nextval, #{title}, sysdate, 
+
+			to_date(#{schDate}, 'YYYY-MM-DD HH24:MI:SS'), 
+
+			#{schAddr}, #{schContent}, #{mentor.uNum}, #{team.tNum})
+
+	</insert>
+
+<!--  //		private String title; -->
+
+<!-- //		private String aContent; -->
+
+<!-- //		private String image; -->
+
+<!-- //		private String actAddress; -->
+
+<!-- //		private Date actDate; -->
+
+<!-- //		private String uNum; -->
+
+<!-- //		private String tNum; -->
+
+ 
+
+ 
+
+ 	<insert id="insertActivity" parameterType="Activity">
+
+ 		INSERT INTO activity(a_num, title, a_date, a_content, image, act_address, act_date, u_num, t_num)
+
+			VALUES (SEQ_ACT_NUM.nextval, #{title}, sysdate, #{aContent}, #{image}, #{actAddress}, 
+
+			to_date(#{actDate}, 'YYYY-MM-DD HH24:MI:SS'), 
+
+			#{user.uNum}, #{team.tNum})
+
+ 	</insert>
+
+ 
+
+ 
+
+	<delete id="deleteActivity" parameterType="String">
+
+   		 DELETE FROM Activity 
+
+		WHERE a_num = #{aNum}
+
+  	</delete>
+
+ 
+
+ 
+
+</mapper>

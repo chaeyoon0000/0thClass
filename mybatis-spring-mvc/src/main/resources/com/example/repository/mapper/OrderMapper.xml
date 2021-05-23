@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.repository.mapper.OrderMapper">	
+  	<cache />
+  	
+  	<sql id="BaseColumns">
+		o_num AS wNum, 
+		item, 
+		p.name AS iName, 
+		p.catTitle AS catTitle, 
+		p.price AS price, 
+		p.seller_id AS seller, 
+		p.isSale AS isSale, 
+		kind, 
+		u.u_num AS "owner.uNum", 
+		u.id AS "owner.id"
+	</sql>
+	
+	<!--  wish에 product 목록보기 -->
+  	<select id="selectProductListFromWish" parameterType="String" resultType="WishList">
+		SELECT <include refid="BaseColumns" />
+		FROM order_t, user_t u, (SELECT p_num AS pNum, 
+									    product.name AS name, 
+									    price, 
+									    c.cat_title AS catTitle, 
+									    user_t.id AS seller_id, 
+									    is_sale AS isSale
+  								FROM product, category c, user_t
+  								WHERE product.cat_num = c.cat_num and product.u_num = user_t.u_num) p
+		WHERE order_t.owner = u.u_num and order_t.owner = #{uNum} and order_t.item = p.pNum and order_t.kind = '2'
+		ORDER BY o_num desc
+	</select>
+	
+	<insert id="insertProductOrder" parameterType="WishList">
+		INSERT INTO order_t(o_num, price, item, kind, owner) 
+		VALUES (SEQ_ODR_NUM.nextval, #{price}, #{item}, #{kind}, #{owner.uNum})
+	</insert>
+	
+	<select id="selectProductOrderByuNum" parameterType="hashmap" resultType="Product">
+		SELECT 	p.price AS price, p.name AS name, u.u_num AS "seller.uNum", u.id AS "seller.id",
+			p.p_num AS pNum, c.cat_num AS "cate.catNum", c.cat_title AS "cate.catTitle",
+			p.content AS content, p.image AS image, p.file_path AS filePath, p.is_sale AS isSale
+		FROM order_t o, user_t u, product p, category c
+		WHERE o.kind = '2' and o.owner = #{uNum} and u.u_num = p.u_num and p.p_num = o.item and c.cat_num = p.cat_num
+		ORDER BY o.o_num desc
+	</select>
+	
+	<select id="selectSellProductOrderByuNum" parameterType="hashmap" resultType="Product">
+		SELECT 	p.price AS price, p.name AS name, u.u_num AS "seller.uNum", u.id AS "seller.id",
+			p.p_num AS pNum, c.cat_num AS "cate.catNum", c.cat_title AS "cate.catTitle",
+			p.content AS content, p.image AS image, p.file_path AS filePath, p.is_sale AS isSale
+		FROM order_t o, user_t u, product p, category c
+		WHERE o.kind = '2' and p.u_num = #{uNum} and u.u_num = o.owner and p.p_num = o.item and c.cat_num = p.cat_num
+		ORDER BY o.o_num desc
+	</select>
+
+</mapper>
